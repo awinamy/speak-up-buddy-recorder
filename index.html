@@ -221,54 +221,56 @@ stopBtn.onclick = () => {
 
 async function sendToGemini(blob){
 
-  try{
+  try {
 
     const base64 = await blobToBase64(blob);
 
-    const response = await fetch(WEB_APP_URL,{
+    const requestId =
+      "REQ_" + Date.now() + "_" +
+      Math.random().toString(36).substring(2,8);
+const iframe = document.createElement("iframe");
 
-      method:"POST",
+iframe.name = "hiddenFrame";
+iframe.style.display = "none";
 
-      headers:{
-        "Content-Type":"application/json"
-      },
+document.body.appendChild(iframe);
 
-      body:JSON.stringify({
+const form = document.createElement("form");
 
-        audio:base64,
+    form.method = "POST";
+    form.action = WEB_APP_URL;
+    form.target = "hiddenFrame";
+    form.style.display = "none";
 
-        mimeType:"audio/webm",
+    const fields = {
+      audio: base64,
+      mimeType: "audio/webm",
+      question: "What is your name?",
+      requestId: requestId
+    };
 
-        question:"What is your name?"
+    Object.keys(fields).forEach(function(key){
 
-      })
+      const input = document.createElement("input");
+
+      input.type = "hidden";
+      input.name = key;
+      input.value = fields[key];
+
+      form.appendChild(input);
 
     });
 
-    const result = await response.json();
+    document.body.appendChild(form);
 
-    console.log(result);
+    form.submit();
 
-    if(result.error){
-
-      status.textContent =
-        "❌ AI Error";
-
-      feedback.style.display = "block";
-
-      feedback.textContent =
-        result.error;
-
-      return;
-    }
+    form.remove();
 
     status.textContent =
-      "✅ AI analysis complete!";
+      "⏳ AI is analysing your speaking...";
 
-    feedback.style.display = "block";
-
-    feedback.textContent =
-      JSON.stringify(result,null,2);
+    waitForResult(requestId);
 
   }
 
@@ -277,7 +279,7 @@ async function sendToGemini(blob){
     console.error(error);
 
     status.textContent =
-      "⚠️ Could not connect to AI.";
+      "⚠️ Could not send recording.";
 
     feedback.style.display = "block";
 
@@ -285,6 +287,91 @@ async function sendToGemini(blob){
       error.message;
 
   }
+
+}
+
+
+function waitForResult(requestId){
+
+  let attempts = 0;
+
+  const checkResult = () => {
+
+    attempts++;
+
+    const callbackName =
+      "geminiCallback_" + Date.now();
+
+    window[callbackName] = function(data){
+
+      delete window[callbackName];
+
+      if(data && data.success){
+
+        status.textContent =
+          "✅ AI analysis complete!";
+
+        feedback.style.display = "block";
+
+        feedback.textContent =
+          JSON.stringify(data.result, null, 2);
+
+      } else {
+
+        status.textContent =
+          "❌ AI Error";
+
+        feedback.style.display = "block";
+
+        feedback.textContent =
+          data.error || "Unknown error.";
+
+      }
+
+      script.remove();
+
+    };
+
+    const script =
+      document.createElement("script");
+
+    script.src =
+      WEB_APP_URL +
+      "?action=result" +
+      "&requestId=" +
+      encodeURIComponent(requestId) +
+      "&callback=" +
+      callbackName;
+
+    script.onerror = function(){
+
+      delete window[callbackName];
+
+      script.remove();
+
+      if(attempts < 20){
+
+        setTimeout(checkResult, 1500);
+
+      } else {
+
+        status.textContent =
+          "⚠️ AI response timeout.";
+
+        feedback.style.display = "block";
+
+        feedback.textContent =
+          "Gemini did not return a result.";
+
+      }
+
+    };
+
+    document.body.appendChild(script);
+
+  };
+
+  setTimeout(checkResult, 3000);
 
 }
 
