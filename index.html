@@ -294,8 +294,9 @@ const form = document.createElement("form");
 function waitForResult(requestId){
 
   let attempts = 0;
+  const maxAttempts = 30;
 
-  const checkResult = () => {
+  function checkResult(){
 
     attempts++;
 
@@ -306,31 +307,72 @@ function waitForResult(requestId){
 
       delete window[callbackName];
 
+      // =========================
+      // RESULT READY
+      // =========================
+
       if(data && data.success){
 
         status.textContent =
           "✅ AI analysis complete!";
 
-        feedback.style.display = "block";
+        feedback.style.display =
+          "block";
 
         feedback.textContent =
-          JSON.stringify(data.result, null, 2);
+          JSON.stringify(
+            data.result,
+            null,
+            2
+          );
 
-      } else {
+        script.remove();
 
-        status.textContent =
-          "❌ AI Error";
-
-        feedback.style.display = "block";
-
-        feedback.textContent =
-          data.error || "Unknown error.";
-
+        return;
       }
+
+
+      // =========================
+      // NOT READY YET
+      // TRY AGAIN
+      // =========================
+
+      if(
+        data &&
+        data.error === "Result not ready yet." &&
+        attempts < maxAttempts
+      ){
+
+        script.remove();
+
+        setTimeout(
+          checkResult,
+          3000
+        );
+
+        return;
+      }
+
+
+      // =========================
+      // REAL ERROR
+      // =========================
+
+      status.textContent =
+        "❌ AI Error";
+
+      feedback.style.display =
+        "block";
+
+      feedback.textContent =
+        data && data.error
+          ? data.error
+          : "Unknown error.";
 
       script.remove();
 
     };
+
 
     const script =
       document.createElement("script");
@@ -343,22 +385,27 @@ function waitForResult(requestId){
       "&callback=" +
       callbackName;
 
+
     script.onerror = function(){
 
       delete window[callbackName];
 
       script.remove();
 
-      if(attempts < 20){
+      if(attempts < maxAttempts){
 
-        setTimeout(checkResult, 1500);
+        setTimeout(
+          checkResult,
+          3000
+        );
 
       } else {
 
         status.textContent =
           "⚠️ AI response timeout.";
 
-        feedback.style.display = "block";
+        feedback.style.display =
+          "block";
 
         feedback.textContent =
           "Gemini did not return a result.";
@@ -367,14 +414,19 @@ function waitForResult(requestId){
 
     };
 
+
     document.body.appendChild(script);
 
-  };
+  }
 
-  setTimeout(checkResult, 3000);
+
+  // First check after 5 seconds
+  setTimeout(
+    checkResult,
+    5000
+  );
 
 }
-
 
 function blobToBase64(blob){
 
