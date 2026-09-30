@@ -3,92 +3,316 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SPEAK UP BUDDY — Recorder</title>
+
+<title>SPEAK UP BUDDY</title>
+
 <style>
-  body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#ffe4f1,#e9e2ff);min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
-  .card{background:white;max-width:520px;width:100%;border-radius:28px;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,.12);text-align:center}
-  h1{color:#d63384;margin:0 0 8px}
-  .subtitle{color:#666;margin-bottom:24px}
-  .question{background:#fff5fa;border-radius:18px;padding:20px;font-size:24px;font-weight:700;margin-bottom:20px}
-  button{border:0;border-radius:18px;padding:16px 24px;font-size:18px;font-weight:700;margin:6px;cursor:pointer}
-  #start{background:#ec4899;color:white} #stop{background:#6366f1;color:white}
-  button:disabled{opacity:.45;cursor:not-allowed}
-  #status{margin:18px 0;font-weight:600;min-height:24px}
-  audio{width:100%;margin-top:10px}
-  .tip{font-size:14px;color:#777;margin-top:18px}
+body{
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#ffe4f1,#e9e2ff);
+  min-height:100vh;
+  margin:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  box-sizing:border-box
+}
+
+.card{
+  background:white;
+  max-width:520px;
+  width:100%;
+  border-radius:28px;
+  padding:28px;
+  box-shadow:0 12px 35px rgba(0,0,0,.12);
+  text-align:center
+}
+
+h1{
+  color:#d63384;
+  margin:0 0 8px
+}
+
+.subtitle{
+  color:#666;
+  margin-bottom:24px
+}
+
+.question{
+  background:#fff5fa;
+  border-radius:18px;
+  padding:20px;
+  font-size:24px;
+  font-weight:700;
+  margin-bottom:20px
+}
+
+button{
+  border:0;
+  border-radius:18px;
+  padding:16px 24px;
+  font-size:18px;
+  font-weight:700;
+  margin:6px;
+  cursor:pointer
+}
+
+#start{
+  background:#ec4899;
+  color:white
+}
+
+#stop{
+  background:#6366f1;
+  color:white
+}
+
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed
+}
+
+#status{
+  margin:18px 0;
+  font-weight:600;
+  min-height:24px
+}
+
+audio{
+  width:100%;
+  margin-top:10px
+}
+
+#feedback{
+  text-align:left;
+  margin-top:20px;
+  padding:18px;
+  background:#f8f5ff;
+  border-radius:18px;
+  white-space:pre-wrap;
+  display:none
+}
 </style>
 </head>
+
 <body>
+
 <div class="card">
-  <h1>🎤 SPEAK UP BUDDY</h1>
-  <div class="subtitle">Microphone Test Recorder</div>
 
-  <div class="question">What is your name?</div>
+<h1>🎤 SPEAK UP BUDDY</h1>
 
-  <button id="start">🎤 SPEAK NOW</button>
-  <button id="stop" disabled>⏹️ STOP</button>
+<div class="subtitle">
+SPM English Speaking Coach
+</div>
 
-  <div id="status">Ready. Press SPEAK NOW.</div>
-  <audio id="audio" controls hidden></audio>
+<div class="question">
+What is your name?
+</div>
 
-  <div class="tip">Allow microphone access when Chrome asks.</div>
+<button id="start">
+🎤 SPEAK NOW
+</button>
+
+<button id="stop" disabled>
+⏹️ STOP
+</button>
+
+<div id="status">
+Ready. Press SPEAK NOW.
+</div>
+
+<audio id="audio" controls hidden></audio>
+
+<div id="feedback"></div>
+
 </div>
 
 <script>
+
+const WEB_APP_URL =
+"https://script.google.com/a/macros/moe-dl.edu.my/s/AKfycbwb4lEbAFjJNPEi47lPPanjTIS3Kkqc9eo_Fjb5g3I7FIL7iuj2_C0S9hiSffSwWprZQg/exec";
+
 let recorder;
 let chunks = [];
 let stream;
 
-const startBtn = document.getElementById('start');
-const stopBtn = document.getElementById('stop');
-const status = document.getElementById('status');
-const audio = document.getElementById('audio');
+const startBtn = document.getElementById("start");
+const stopBtn = document.getElementById("stop");
+const status = document.getElementById("status");
+const audio = document.getElementById("audio");
+const feedback = document.getElementById("feedback");
 
 startBtn.onclick = async () => {
+
   try {
-    status.textContent = '🎤 Requesting microphone...';
+
+    status.textContent = "🎤 Requesting microphone...";
 
     stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
+      audio:{
+        echoCancellation:true,
+        noiseSuppression:true,
+        autoGainControl:true
       }
     });
 
     chunks = [];
+
     recorder = new MediaRecorder(stream);
 
-    recorder.ondataavailable = e => {
-      if (e.data.size > 0) chunks.push(e.data);
+    recorder.ondataavailable = event => {
+      if(event.data.size > 0){
+        chunks.push(event.data);
+      }
     };
 
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, {type: 'audio/webm'});
+    recorder.onstop = async () => {
+
+      const blob = new Blob(chunks,{
+        type:"audio/webm"
+      });
+
       audio.src = URL.createObjectURL(blob);
       audio.hidden = false;
-      status.textContent = '✅ Recording complete. Press play to listen.';
+
       stream.getTracks().forEach(track => track.stop());
+
+      status.textContent = "⏳ Sending your speaking to AI...";
+
+      await sendToGemini(blob);
     };
 
     recorder.start();
+
     startBtn.disabled = true;
     stopBtn.disabled = false;
-    status.textContent = '🔴 Recording... Speak now!';
-  } catch (error) {
+
     status.textContent =
-      '⚠️ ' + error.name + ' — ' + error.message;
-    console.error(error);
+      "🔴 Recording... Speak now!";
+
   }
+
+  catch(error){
+
+    status.textContent =
+      "⚠️ " + error.name + " — " + error.message;
+
+    console.error(error);
+
+  }
+
 };
 
+
 stopBtn.onclick = () => {
-  if (recorder && recorder.state !== 'inactive') {
+
+  if(recorder && recorder.state !== "inactive"){
+
     recorder.stop();
+
     startBtn.disabled = false;
     stopBtn.disabled = true;
+
   }
+
 };
+
+
+async function sendToGemini(blob){
+
+  try{
+
+    const base64 = await blobToBase64(blob);
+
+    const response = await fetch(WEB_APP_URL,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+
+        audio:base64,
+
+        mimeType:"audio/webm",
+
+        question:"What is your name?"
+
+      })
+
+    });
+
+    const result = await response.json();
+
+    console.log(result);
+
+    if(result.error){
+
+      status.textContent =
+        "❌ AI Error";
+
+      feedback.style.display = "block";
+
+      feedback.textContent =
+        result.error;
+
+      return;
+    }
+
+    status.textContent =
+      "✅ AI analysis complete!";
+
+    feedback.style.display = "block";
+
+    feedback.textContent =
+      JSON.stringify(result,null,2);
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    status.textContent =
+      "⚠️ Could not connect to AI.";
+
+    feedback.style.display = "block";
+
+    feedback.textContent =
+      error.message;
+
+  }
+
+}
+
+
+function blobToBase64(blob){
+
+  return new Promise((resolve,reject)=>{
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+
+      const base64 =
+        reader.result.split(",")[1];
+
+      resolve(base64);
+
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(blob);
+
+  });
+
+}
+
 </script>
+
 </body>
 </html>
