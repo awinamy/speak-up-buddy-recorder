@@ -290,7 +290,27 @@ const form = document.createElement("form");
 
 }
 
+function formatFeedback(text){
 
+  let output = text;
+
+  output = output
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n/g, "<br>");
+
+  return `
+    <div class="buddy-title">🎤 SPEAK UP BUDDY</div>
+
+    <div class="feedback-content">
+      ${output}
+    </div>
+
+    <div class="buddy-message">
+      💡 <strong>Keep speaking!</strong><br>
+      Don't worry about mistakes. Speak more, improve more! 💗
+    </div>
+  `;
+}
 function waitForResult(requestId){
 
   let attempts = 0;
@@ -313,23 +333,28 @@ function waitForResult(requestId){
 
       if(data && data.success){
 
-        status.textContent =
-          "✅ AI analysis complete!";
+  status.textContent =
+    "✅ AI analysis complete!";
 
-        feedback.style.display =
-          "block";
+  feedback.style.display =
+    "block";
 
-        feedback.textContent =
-          JSON.stringify(
-            data.result,
-            null,
-            2
-          );
+  const aiText =
+    data.result &&
+    data.result.candidates &&
+    data.result.candidates[0] &&
+    data.result.candidates[0].content &&
+    data.result.candidates[0].content.parts &&
+    data.result.candidates[0].content.parts[0]
+      ? data.result.candidates[0].content.parts[0].text
+      : "No feedback received.";
 
-        script.remove();
+  feedback.innerHTML = formatFeedback(aiText);
 
-        return;
-      }
+  script.remove();
+
+  return;
+}
 
 
       // =========================
