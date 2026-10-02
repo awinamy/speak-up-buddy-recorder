@@ -106,17 +106,103 @@ audio{
 SPM English Speaking Coach
 </div>
 
-<div class="question">
-What is your name?
+<div id="modeBox">
+
+  <h2>👋 Welcome, Speaker!</h2>
+
+  <p>Choose your practice mode:</p>
+
+  <button id="studentMode">
+    👤 STUDENT MODE
+  </button>
+
+  <button id="anonymousMode">
+    🌸 ANONYMOUS
+  </button>
+
+  <div id="nameBox" style="display:none; margin-top:15px;">
+
+    <p><strong>What's your name?</strong></p>
+
+    <input
+      id="studentName"
+      type="text"
+      placeholder="Type your name here"
+      style="
+        width:90%;
+        padding:14px;
+        border-radius:15px;
+        border:1px solid #ddd;
+        font-size:16px;
+      "
+    >
+
+    <button id="continueBtn">
+      CONTINUE →
+    </button>
+
+  </div>
+
 </div>
 
-<button id="start">
-🎤 SPEAK NOW
-</button>
+<div id="practiceBox" style="display:none;">
 
-<button id="stop" disabled>
-⏹️ STOP
-</button>
+<div id="modeBox">
+
+  <h2>👋 Welcome, Speaker!</h2>
+
+  <p>Choose your practice mode:</p>
+
+  <button id="studentMode">
+    👤 STUDENT MODE
+  </button>
+
+  <button id="anonymousMode">
+    🌸 ANONYMOUS
+  </button>
+
+  <div id="nameBox" style="display:none; margin-top:15px;">
+
+    <p><strong>What's your name?</strong></p>
+
+    <input
+      id="studentName"
+      type="text"
+      placeholder="Type your name here"
+      style="
+        width:90%;
+        padding:14px;
+        border-radius:15px;
+        border:1px solid #ddd;
+        font-size:16px;
+      "
+    >
+
+    <button id="continueBtn">
+      CONTINUE →
+    </button>
+
+  </div>
+
+</div>
+
+<div id="practiceBox" style="display:none;">
+
+  <div class="question">
+    What is your name?
+  </div>
+
+  <button id="start">
+    🎤 SPEAK NOW
+  </button>
+
+  <button id="stop" disabled>
+    ⏹️ STOP
+  </button>
+
+</div>
+
+</div>
 
 <div id="status">
 Ready. Press SPEAK NOW.
@@ -142,6 +228,66 @@ const stopBtn = document.getElementById("stop");
 const status = document.getElementById("status");
 const audio = document.getElementById("audio");
 const feedback = document.getElementById("feedback");
+  // ===============================
+// STUDENT / ANONYMOUS MODE
+// ===============================
+
+let practiceMode = "";
+let studentName = "";
+
+const studentModeBtn = document.getElementById("studentMode");
+const anonymousModeBtn = document.getElementById("anonymousMode");
+const nameBox = document.getElementById("nameBox");
+const studentNameInput = document.getElementById("studentName");
+const continueBtn = document.getElementById("continueBtn");
+const modeBox = document.getElementById("modeBox");
+const practiceBox = document.getElementById("practiceBox");
+
+studentModeBtn.onclick = () => {
+
+  practiceMode = "Student";
+
+  nameBox.style.display = "block";
+
+  studentNameInput.focus();
+
+};
+
+anonymousModeBtn.onclick = () => {
+
+  practiceMode = "Anonymous";
+  studentName = "Anonymous";
+
+  modeBox.style.display = "none";
+  practiceBox.style.display = "block";
+
+  status.textContent = "Anonymous Mode — Ready. Press SPEAK NOW.";
+
+};
+
+continueBtn.onclick = () => {
+
+  const name = studentNameInput.value.trim();
+
+  if (!name) {
+
+    alert("Please enter your name.");
+
+    studentNameInput.focus();
+
+    return;
+
+  }
+
+  practiceMode = "Student";
+  studentName = name;
+
+  modeBox.style.display = "none";
+  practiceBox.style.display = "block";
+
+  status.textContent = "Welcome, " + studentName + "! Press SPEAK NOW.";
+
+};
 
 startBtn.onclick = async () => {
 
@@ -246,7 +392,9 @@ const form = document.createElement("form");
       audio: base64,
       mimeType: "audio/webm",
       question: "What is your name?",
-      requestId: requestId
+      requestId: requestId,
+      studentName: studentName,
+      mode: practiceMode
     };
 
     Object.keys(fields).forEach(function(key){
