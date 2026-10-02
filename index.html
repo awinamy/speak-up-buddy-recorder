@@ -240,6 +240,8 @@ continueBtn.onclick = () => {
   practiceMode = "Student";
   studentName = name;
 
+  localStorage.setItem("studentName", studentName);
+  
   modeBox.style.display = "none";
   practiceBox.style.display = "block";
 
