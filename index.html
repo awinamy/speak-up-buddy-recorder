@@ -228,6 +228,112 @@ const feedback = document.getElementById("feedback");
 }
   
 loadProgress();
+  function showProgress() {
+
+  const name =
+    localStorage.getItem("studentName") || "Speaker";
+
+  const sessions =
+    localStorage.getItem("sessions") || "0";
+
+  const average =
+    localStorage.getItem("average") || "—";
+
+  const latestFeedback =
+    localStorage.getItem("latestFeedback") ||
+    "No feedback yet.";
+
+  const oldScreen =
+    document.getElementById("progressScreen");
+
+  if (oldScreen) {
+    oldScreen.remove();
+  }
+
+  const progressScreen =
+    document.createElement("div");
+
+  progressScreen.id = "progressScreen";
+
+  progressScreen.style.cssText = `
+    max-width:600px;
+    margin:30px auto;
+    padding:30px;
+    background:white;
+    border-radius:25px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+  `;
+
+  progressScreen.innerHTML = `
+
+    <h1>🌸 My Speaking Journey</h1>
+
+    <p>Keep practising. Keep improving!</p>
+
+    <h2>👋 ${name}</h2>
+
+    <div style="
+      display:flex;
+      gap:15px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin:25px 0;
+    ">
+
+      <div style="
+        padding:20px;
+        min-width:120px;
+        background:#fff0f7;
+        border-radius:20px;
+      ">
+        <div style="font-size:28px;">🎤</div>
+        <strong>${sessions}</strong>
+        <br>
+        Sessions
+      </div>
+
+      <div style="
+        padding:20px;
+        min-width:120px;
+        background:#f2f0ff;
+        border-radius:20px;
+      ">
+        <div style="font-size:28px;">⭐</div>
+        <strong>${average}</strong>
+        <br>
+        Average
+      </div>
+
+    </div>
+
+    <h3>💬 My Latest Feedback</h3>
+
+    <div style="
+      background:#fff8fc;
+      padding:20px;
+      border-radius:18px;
+      margin:15px 0;
+    ">
+      ${latestFeedback}
+    </div>
+
+    <button
+      onclick="location.reload()"
+      style="
+        padding:14px 25px;
+        border:none;
+        border-radius:20px;
+        cursor:pointer;
+      "
+    >
+      🏠 BACK TO PRACTICE
+    </button>
+
+  `;
+
+  document.body.appendChild(progressScreen);
+}
   
   // ===============================
 // STUDENT / ANONYMOUS MODE
