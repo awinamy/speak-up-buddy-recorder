@@ -186,6 +186,46 @@ const stopBtn = document.getElementById("stop");
 const status = document.getElementById("status");
 const audio = document.getElementById("audio");
 const feedback = document.getElementById("feedback");
+
+  async function loadProgress() {
+
+  const name = localStorage.getItem("studentName");
+
+  if (!name) return;
+
+  const url =
+    WEB_APP_URL +
+    "?action=progress&studentName=" +
+    encodeURIComponent(name);
+
+  try {
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    console.log("Progress:", data);
+
+    localStorage.setItem(
+      "sessions",
+      data.sessions || 0
+    );
+
+    localStorage.setItem(
+      "average",
+      data.average || 0
+    );
+
+    localStorage.setItem(
+      "latestFeedback",
+      data.latestFeedback || ""
+    );
+
+  } catch (error) {
+
+    console.log("Progress error:", error);
+
+  }
+}
   // ===============================
 // STUDENT / ANONYMOUS MODE
 // ===============================
